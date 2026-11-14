@@ -9,11 +9,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - name: Dosyaları yerleştir
         run: |
           mkdir -p www resources
@@ -22,9 +22,8 @@ jobs:
           if [ -f splash.png ]; then cp splash.png resources/splash.png; fi
           ls -R www resources
           if [ -f debug.keystore ]; then mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore; fi
-        
       - name: Paketleri kur
-        run: npm install
+        run: npm install --legacy-peer-deps
       - name: Android projesini oluştur
         run: npx cap add android
       - name: Simgeleri üret
@@ -38,6 +37,12 @@ jobs:
           grep -n "APPLICATION_ID" $M
       - name: Senkronize et
         run: npx cap sync android
+      - name: Sürüm numarası
+        run: |
+          G=android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" $G
+          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" $G
+          grep -n "version" $G
       - name: APK derle
         run: |
           cd android
@@ -47,3 +52,19 @@ jobs:
         with:
           name: 81il-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Play Store paketi (AAB) derle ve imzala
+        env:
+          KS: ${{ secrets.KEYSTORE_B64 }}
+          KP: ${{ secrets.KEYSTORE_PASS }}
+        run: |
+          if [ -z "$KS" ]; then echo "İmza anahtarı eklenmemiş, AAB atlanıyor"; exit 0; fi
+          cd android
+          ./gradlew bundleRelease --no-daemon
+          echo "$KS" | base64 -d > ../release.jks
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.jks -storepass "$KP" app/build/outputs/bundle/release/app-release.aab il81
+          rm ../release.jks
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 81il-playstore-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: ignore

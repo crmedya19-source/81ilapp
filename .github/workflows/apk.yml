@@ -32,7 +32,7 @@ jobs:
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#0f172a' --splashBackgroundColor '#0f172a' || echo "simge üretilemedi"
       - name: AdMob kimliğini ekle
         env:
-          ADMOB_ID: ${{ vars.ADMOB_APP_ID || 'ca-app-pub-3940256099942544~3347511713' }}
+          ADMOB_ID: ${{ vars.ADMOB_APP_ID || 'ca-app-pub-6585740970632503~4365384207' }}
         run: |
           M=android/app/src/main/AndroidManifest.xml
           sed -i "s#</application>#    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$ADMOB_ID\"/>\n    </application>#" $M
@@ -47,6 +47,8 @@ jobs:
           grep -n "version" $G
       - name: APK derle
         run: |
+          sed -i 's/var ADTEST=false;/var ADTEST=true;/' www/index.html && npx cap copy android
+          grep -c 'var ADTEST=true;' www/index.html
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
@@ -67,6 +69,8 @@ jobs:
           KP: ${{ secrets.KEYSTORE_PASS }}
         run: |
           if [ -z "$KS" ]; then echo "İmza anahtarı eklenmemiş, AAB atlanıyor"; exit 0; fi
+          sed -i 's/var ADTEST=true;/var ADTEST=false;/' www/index.html && npx cap copy android
+          grep -c 'var ADTEST=false;' www/index.html
           cd android
           ./gradlew bundleRelease --no-daemon
           echo "$KS" | base64 -d > ../release.jks

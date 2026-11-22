@@ -378,6 +378,7 @@ function monOf(t){var d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-((
 var DTEST=false,CYC=6e5,TOFS=2e6; // DENEME MODU: her saat bir "hafta". Asıl model için DTEST=false
 function wkN(t){t=t==null?NOW():t;return DTEST?Math.floor((t-W0)/CYC)+TOFS:Math.round((monOf(t)-W0)/6048e5)}
 function wkStart(n){if(DTEST)return W0+(n-TOFS)*CYC;var d=new Date(W0);d.setDate(d.getDate()+n*7);return d.getTime()}
+function dayNum(){var d=new Date(NOW());return Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)}
 function dayKey(t){var d=new Date(t==null?NOW():t);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 
 function fmt(n){return Number(n).toLocaleString("tr-TR")}
@@ -1167,7 +1168,7 @@ function weekKey(d){d=new Date(d==null?NOW():d);var t=new Date(Date.UTC(d.getFul
 function lastWeekKey(){var d=new Date(NOW());d.setDate(d.getDate()-7);return weekKey(d)}
 function weekLeft(){var n=new Date(),m=new Date(n);m.setDate(n.getDate()+(8-(n.getDay()||7)));m.setHours(0,0,0,0);var d=Math.max(0,m-n),g=Math.floor(d/864e5),h=Math.floor(d%864e5/36e5);return (g?g+" gün ":"")+h+" sa"}
 function ligAdd(pts,quiz){if(!quiz||P.mem==null||!(pts>=0))return;var wk=weekKey();if(P.ligW!==wk){P.ligW=wk;P.ligP=0;P.ligM=0}P.ligP+=pts;P.ligM++;saveP();ligPush()}
-async function ligPush(){try{await CLOUD;if(!DB||!UID||P.mem==null)return;var wk=weekKey();if(P.ligW!==wk)return;await DB.collection("lig").doc(UID).set({w:wk,il:P.mem,p:P.ligP||0,m:P.ligM||0,ad:String(P.nick||"").slice(0,16),j:P.memAt||0,lv:lvOf(P.xp),d:dayKey(),dp:spTot(spDay()),at:Date.now()})}catch(e){}}
+async function ligPush(){try{await CLOUD;if(!DB||!UID||P.mem==null)return;var wk=weekKey();if(P.ligW!==wk)return;await DB.collection("lig").doc(UID).set({w:wk,il:P.mem,p:P.ligP||0,m:P.ligM||0,ad:String(P.nick||"").slice(0,16),j:P.memAt||0,lv:lvOf(P.xp),d:dayKey(),dp:Math.min(50,Math.round(spTot(spDay()))),dn:dayNum(),at:Date.now(),ts:firebase.firestore.FieldValue.serverTimestamp()})}catch(e){}}
 function ilOpts(sel){return MAP.il.slice().sort(function(a,b){return a.n.localeCompare(b.n,"tr")}).map(function(x){return "<option value='"+x.id+"'"+(x.id===sel?" selected":"")+">"+esc(x.n)+"</option>"}).join("")}
 function memPick(after,force){if(!memCanFix()){modal("<button class='x' data-x='mOv'>✕</button><h3>🏛️ Memleketin</h3><p><b>"+esc(IL[P.mem].n)+"</b>. Memleket kalıcıdır, dernekten ayrılınmaz 🙂</p>");return}
   modal((force?"<i data-lock></i>":"<button class='x' data-x='mOv'>✕</button>")+"<h3>🏠 Memleketin neresi?</h3><p class='mut' style='margin-top:-6px'>"+(DERNEK?"Seçtiğin ilin derneğine üye olursun. <b>Memleket kalıcıdır</b>":"Puanların bu ile yazılır")+(!DERNEK?".":P.mem==null?"; yanlış seçersen ilk 24 saatte bir kez düzeltebilirsin.":". Bu senin tek düzeltme hakkın.")+"</p>"+
@@ -1176,7 +1177,7 @@ function memPick(after,force){if(!memCanFix()){modal("<button class='x' data-x='
   $("memOk").onclick=function(){var v=$("memSel").value;if(v===""){toast("Bir il seç");return}var nk=String($("memNick").value||"").trim().slice(0,16);if(!nk){toast("Bir takma ad yaz");return}
     if(P.mem==null){P.memAt=NOW();P.memGrace=NOW()}else if(+v!==P.mem)P.memFix=1;P.mem=+v;P.nick=nk;saveP();ligPush();toast(DERNEK?"🏛️ "+drN(P.mem)+" üyesisin!":"🏠 Memleketin: "+IL[P.mem].n);renderHome();if(after)after();else if(DERNEK)drOpen("pano");else renderLig()}}
 var LIGC="ort",MINP=3;
-async function ligFetch(wk){await CLOUD;if(!DB)return null;var q=await DB.collection("lig").where("w","==",wk).get();return q.docs.map(function(d){var x=d.data();return{id:d.id,il:+x.il,p:+x.p||0,m:+x.m||0,ad:String(x.ad||"").slice(0,16)}}).filter(function(x){return IL[x.il]&&x.p>=0&&x.p<1e7})}
+async function ligFetch(wk){await CLOUD;if(!DB)return null;var q=await DB.collection("lig").where("w","==",wk).get();return q.docs.map(function(d){var x=d.data();return{id:d.id,il:+x.il,p:+x.p||0,m:+x.m||0,ad:String(x.ad||"").slice(0,16)}}).filter(function(x){return IL[x.il]&&x.p>=0&&x.p<=700})}
 function ligAgg(rows){var by={};rows.forEach(function(r){var o=by[r.il]||(by[r.il]={il:r.il,p:0,n:0,m:0});o.p+=r.p;o.n++;o.m+=r.m});var L=Object.keys(by).map(function(k){var o=by[k];o.avg=Math.round(o.p/Math.max(1,o.n)*10)/10;o.ok=o.n>=MINP;o.v=LIGC==="ort"?o.avg:o.p;return o});
   return L.sort(function(a,b){return LIGC==="ort"?((b.ok-a.ok)||(b.avg-a.avg)||(b.n-a.n)):(b.p-a.p||b.n-a.n)})}
 function ligMap(agg){var mx=agg.length?agg[0].v:1,rk={};agg.forEach(function(a,i){rk[a.il]=i});

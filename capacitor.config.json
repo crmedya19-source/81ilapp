@@ -1,6 +1,6 @@
 {
   "appId": "com.il81.oyun",
-  "appName": "81 İl Kapışması",
+  "appName": "Bilgi Savaşı",
   "webDir": "www",
   "android": { "backgroundColor": "#0f172a" },
   "server": { "androidScheme": "https" }

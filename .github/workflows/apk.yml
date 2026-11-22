@@ -5,6 +5,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,6 +54,13 @@ jobs:
         with:
           name: 81il-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: APK'yı direkt indirme linkine koy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk bilgi-savasi.apk
+          gh release delete son -y --cleanup-tag || true
+          gh release create son bilgi-savasi.apk -t "Son APK (1.0.${{ github.run_number }})" -n "Telefona kurmak için bilgi-savasi.apk dosyasını indir." --latest
       - name: Play Store paketi (AAB) derle ve imzala
         env:
           KS: ${{ secrets.KEYSTORE_B64 }}

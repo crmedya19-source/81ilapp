@@ -1,6 +1,10 @@
 name: APK yap
 on:
   push:
+    paths-ignore:
+      - 'sorular/**'
+      - 'privacy.html'
+      - 'veri-silme.html'
   workflow_dispatch:
 jobs:
   build:

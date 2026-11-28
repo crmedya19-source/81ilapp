@@ -1219,7 +1219,7 @@ function mqSave(c,s,own){P.mq=(P.mq||[]).filter(function(m){return m.c!==c});P.m
 function mqShareTxt(c,s,a){return "⚔️ Bilgi Savaşı meydan okuması!\n10 soruda "+s+" puan yaptım "+mqEm(a)+"\nBeni geçebilir misin? Kod: "+c+"\n"+MQ_URL+"?m="+c}
 async function mqStart(){dayTick();var Q=mqPick();if(Q.length<10){toast("Soru bulunamadı");return}
   mqRun(Q,"⚔️ Meydan okuma",async function(sc,ans){await CLOUD;var c=mqCode(),ok=false;
-    try{if(DB&&UID&&!inClaude()){await DB.collection("meydan").doc(c).set({u:UID,ad:String(P.nick||"Oyuncu").slice(0,16),il:P.mem==null?-1:P.mem,q:Q.map(qid),s:sc,a:ans,at:Date.now()});ok=true}}catch(e){console.warn(e)}
+    try{if(DB&&UID&&!inClaude()){await DB.collection("meydan").doc(c).set({u:UID,ad:String(nmF(P.nick)||"Oyuncu").slice(0,16),il:P.mem==null?-1:P.mem,q:Q.map(qid),s:sc,a:ans,at:Date.now()});ok=true}}catch(e){console.warn(e)}
     if(!ok){modal("<h3>⚔️ "+sc+" puan</h3><p>Meydan okuma kaydedilemedi, internet bağlantını kontrol edip tekrar dene.</p><div class='act'><button class='btn p' data-x='mOv'>Tamam</button></div>");return}
     mqSave(c,sc,1);qev&&qev("play");
     modal("<h3 style='text-align:center'>⚔️ Meydan okuma hazır!</h3><div style='text-align:center;font-size:44px;font-weight:800;color:var(--acc)'>"+sc+"<span style='font-size:18px;color:var(--mut)'>/150</span></div><p style='text-align:center;font-size:20px;letter-spacing:2px'>"+mqEm(ans)+"</p>"+
@@ -1233,16 +1233,16 @@ async function mqJoin(c){modal("<p style='text-align:center'>Meydan okuma yükle
   var mine=null;try{var cd=await DB.collection("meydan").doc(c).collection("c").doc(UID).get();if(cd.exists)mine=cd.data()}catch(e){}if(mine){mqSave(c,mine.s,0);mqShow(c);return}
   var map={};QB.forEach(function(q){map[qid(q)]=q});var Q=(m.q||[]).map(function(id){return map[id]}).filter(Boolean);
   if(Q.length<8){modal("<button class='x' data-x='mOv'>✕</button><h3>Güncelleme gerekli</h3><p>Bu meydan okumadaki soruların bazıları sende yok. Uygulamayı güncelleyip tekrar dene.</p>");return}
-  modal("<h3 style='text-align:center'>⚔️ "+esc(m.ad||"Bir oyuncu")+" sana meydan okuyor!</h3><p style='text-align:center'>"+Q.length+" soruda <b style='color:var(--acc)'>"+m.s+"</b> puan yaptı. Geçebilecek misin?</p><p class='mut' style='text-align:center;font-size:13px'>Her soruya 15 saniye. Hızlı cevap ek puan getirir. Tek hakkın var!</p><div class='act'><button class='btn' data-x='mOv'>Vazgeç</button><button class='btn p' id='mqP'>Başla</button></div>");
-  $("mqP").onclick=function(){dayTick();mqRun(Q,"⚔️ "+esc(m.ad||"Meydan okuma"),async function(sc,ans){try{await DB.collection("meydan").doc(c).collection("c").doc(UID).set({ad:String(P.nick||"Oyuncu").slice(0,16),s:sc,a:ans,at:Date.now()})}catch(e){console.warn(e)}
+  modal("<h3 style='text-align:center'>⚔️ "+esc(nmF(m.ad)||"Bir oyuncu")+" sana meydan okuyor!</h3><p style='text-align:center'>"+Q.length+" soruda <b style='color:var(--acc)'>"+m.s+"</b> puan yaptı. Geçebilecek misin?</p><p class='mut' style='text-align:center;font-size:13px'>Her soruya 15 saniye. Hızlı cevap ek puan getirir. Tek hakkın var!</p><div class='act'><button class='btn' data-x='mOv'>Vazgeç</button><button class='btn p' id='mqP'>Başla</button></div>");
+  $("mqP").onclick=function(){dayTick();mqRun(Q,"⚔️ "+esc(nmF(m.ad)||"Meydan okuma"),async function(sc,ans){try{await DB.collection("meydan").doc(c).collection("c").doc(UID).set({ad:String(nmF(P.nick)||"Oyuncu").slice(0,16),s:sc,a:ans,at:Date.now()})}catch(e){console.warn(e)}
     mqSave(c,sc,0);if(sc>m.s)CF.burst(140,["#facc15","#22c55e","#3b82f6"]);mqShow(c,{s:sc,a:ans})})}}
 async function mqShow(c,me){var m=await mqGet(c);if(!m){toast("Meydan okuma açılamadı");return}var L=[];
   try{var qs=await DB.collection("meydan").doc(c).collection("c").orderBy("s","desc").limit(30).get();qs.forEach(function(d){var x=d.data();x.id=d.id;L.push(x)})}catch(e){}
   var own=m.u===UID,my=me||L.filter(function(x){return x.id===UID})[0],h="<button class='x' data-x='mOv'>✕</button><h3>⚔️ Meydan okuma <span style='letter-spacing:3px;color:var(--acc)'>"+c+"</span></h3>";
   if(my&&!own){var w=my.s>m.s,t=my.s===m.s;h+="<div style='text-align:center;font-size:30px;font-weight:800;margin:6px 0'>"+(w?"🏆 Kazandın!":t?"🤝 Berabere":"😅 Kaybettin")+"</div>"+
-    "<div class='card'><div class='rw'><span>Sen</span><b>"+my.s+" "+mqEm(my.a||[])+"</b></div><div class='rw' style='border:0'><span>"+esc(m.ad||"Rakip")+"</span><b>"+m.s+" "+mqEm(m.a||[])+"</b></div></div>"}
+    "<div class='card'><div class='rw'><span>Sen</span><b>"+my.s+" "+mqEm(my.a||[])+"</b></div><div class='rw' style='border:0'><span>"+esc(nmF(m.ad)||"Rakip")+"</span><b>"+m.s+" "+mqEm(m.a||[])+"</b></div></div>"}
   var all=[{ad:(m.ad||"Kurucu")+" 👑",s:m.s,id:m.u}].concat(L).sort(function(a,b){return b.s-a.s});
-  h+="<div class='lbl' style='margin-top:10px'>Sıralama · "+all.length+" kişi</div>"+all.map(function(x,i){return "<div class='rk' style='border-color:"+(x.id===UID?"var(--acc)":"#334155")+"'><span class='m'>"+(i<3?["🥇","🥈","🥉"][i]:(i+1)+".")+"</span><span style='flex:1'>"+esc(x.ad||"Oyuncu")+(x.id===UID?" (sen)":"")+"</span><b>"+x.s+"</b></div>"}).join("")+
+  h+="<div class='lbl' style='margin-top:10px'>Sıralama · "+all.length+" kişi</div>"+all.map(function(x,i){return "<div class='rk' style='border-color:"+(x.id===UID?"var(--acc)":"#334155")+"'><span class='m'>"+(i<3?["🥇","🥈","🥉"][i]:(i+1)+".")+"</span><span style='flex:1'>"+esc(nmF(x.ad)||"Oyuncu")+(x.id===UID?" (sen)":"")+"</span><b>"+x.s+"</b></div>"}).join("")+
     "<div class='act'><button class='btn' id='mqNw'>Yeni meydan okuma</button><button class='btn p' id='mqSh'>📤 Paylaş</button></div>";
   modal(h);$("mqNw").onclick=mqStart;$("mqSh").onclick=function(){share(own?mqShareTxt(c,m.s,m.a||[]):"⚔️ Bilgi Savaşı meydan okuması "+c+"\n"+(my?"Ben "+my.s+" puan yaptım "+mqEm(my.a||[]):"")+"\nSen de dene: "+MQ_URL+"?m="+c)}}
 function mqBoot(){try{var mm=location.search.match(/[?&]m=([A-Z0-9]{6})/i);if(mm)setTimeout(function(){mqJoin(mm[1].toUpperCase())},1200)}catch(e){}}
@@ -1408,6 +1408,7 @@ async function cloudPull(gate){var u=gUser();if(!u)return;var F=await fbLoad(),d
    "<div class='card'><div class='rw'><span>☁️ Hesaptaki</span><b>Seviye "+lc+" · "+fmt(C.xp)+" XP · "+(C.games|0)+" maç</b></div><div class='rw' style='border:0'><span>📱 Bu telefondaki</span><b>Seviye "+ll+" · "+fmt(P.xp)+" XP · "+(P.games|0)+" maç</b></div></div>"+
    "<button class='btn p big' id='gC' style='width:100%;margin-top:10px'>☁️ Hesaptakini yükle</button><button class='btn' id='gL' style='width:100%;margin-top:8px'>📱 Bu telefondakiyle devam et</button><p class='mut' style='font-size:12px'>Seçmediğin ilerleme silinir.</p>");
   $("gC").onclick=function(){gUse(C)};$("gL").onclick=async function(){close("mOv");await cloudPush();toast("✓ Bu telefondaki ilerleme hesabına kaydedildi")}}
+function gName(u){try{if(!P.nick&&u&&u.displayName){var fn=String(u.displayName).trim().split(/\s+/)[0].slice(0,14);if(fn&&!badNm(fn)){P.nick=fn;saveP()}}}catch(e){}}
 function gUse(C){close("mOv");C.cloudAt=Date.now();P=C;LS.s("prof",P);toast("☁️ İlerlemen yüklendi");setTimeout(function(){location.reload()},900)}
 async function gLogin(btn,gate){var SL=gPlug();if(!SL){toast("Google girişi uygulamada çalışır");return}
   if(btn){btn.disabled=true;btn.textContent="Bağlanıyor…"}
@@ -1415,9 +1416,9 @@ async function gLogin(btn,gate){var SL=gPlug();if(!SL){toast("Google girişi uyg
     await SL.initialize({google:{webClientId:GWEB,mode:"online"}});
     var r=await SL.login({provider:"google",options:{}}),tok=r&&r.result&&r.result.idToken;if(!tok)throw{code:"token alınamadı"};
     var au=firebase.auth(),cred=firebase.auth.GoogleAuthProvider.credential(tok),u;
-    try{if(!au.currentUser)throw{code:"auth/credential-already-in-use"};u=(await au.currentUser.linkWithCredential(cred)).user;F.uid=u.uid;await cloudPush();toast("✓ Google hesabın bağlandı, ilerlemen güvende");if(gate)gGateDone();else profOpen()}
+    try{if(!au.currentUser)throw{code:"auth/credential-already-in-use"};u=(await au.currentUser.linkWithCredential(cred)).user;F.uid=u.uid;gName(u);await cloudPush();toast("✓ Google hesabın bağlandı, ilerlemen güvende");if(gate)gGateDone();else profOpen()}
     catch(e){if(!e||(e.code!=="auth/credential-already-in-use"&&e.code!=="auth/email-already-in-use"))throw e;
-      u=(await au.signInWithCredential(e.credential||cred)).user;F.uid=u.uid;try{UID=u.uid}catch(x){}gGateDone();await cloudPull(gate)}
+      u=(await au.signInWithCredential(e.credential||cred)).user;F.uid=u.uid;gName(u);try{UID=u.uid}catch(x){}gGateDone();await cloudPull(gate)}
   }catch(e){console.warn("google",e);var m=[e&&e.code,e&&e.message,e&&e.errorMessage].filter(Boolean).join(" · ")||String(e);
     if(!/user cancel|canceled by user|cancelled by user|kullanıcı/i.test(m))modal("<button class='x' data-x='mOv'>✕</button><h3>Google girişi tamamlanamadı</h3><p class='mut'>Bu yazının ekran görüntüsünü geliştiriciye gönder:</p><div class='card' style='font-family:monospace;font-size:12px;word-break:break-all'>"+esc(m.slice(0,400))+"<br>v"+APPV+"</div><button class='btn' data-x='mOv' style='width:100%'>Tamam</button>");if(btn&&btn.isConnected){btn.disabled=false;btn.innerHTML="<span class='gG'>G</span>Google ile giriş yap"}}}
 async function gLogout(){if(!confirm2())return;P.gIn=0;try{await cloudPush();var SL=gPlug();if(SL)try{await SL.logout({provider:"google"})}catch(e){}await firebase.auth().signOut()}catch(e){}FBP=null;toast("Çıkış yapıldı");setTimeout(function(){location.reload()},700)}
@@ -1470,13 +1471,13 @@ function weekKey(d){d=new Date(d==null?NOW():d);var t=new Date(Date.UTC(d.getFul
 function lastWeekKey(){var d=new Date(NOW());d.setDate(d.getDate()-7);return weekKey(d)}
 function weekLeft(){var n=new Date(),m=new Date(n);m.setDate(n.getDate()+(8-(n.getDay()||7)));m.setHours(0,0,0,0);var d=Math.max(0,m-n),g=Math.floor(d/864e5),h=Math.floor(d%864e5/36e5);return (g?g+" gün ":"")+h+" sa"}
 function ligAdd(pts,quiz){if(!quiz||P.mem==null||!(pts>=0))return;var wk=weekKey();if(P.ligW!==wk){P.ligW=wk;P.ligP=0;P.ligM=0}P.ligP+=pts;P.ligM++;saveP();ligPush()}
-async function ligPush(){try{await CLOUD;if(!DB||!UID||P.mem==null)return;var wk=weekKey();if(P.ligW!==wk)return;await DB.collection("lig").doc(UID).set({w:wk,il:P.mem,p:P.ligP||0,m:P.ligM||0,ad:String(P.nick||"").slice(0,16),j:P.memAt||0,lv:lvOf(P.xp),d:dayKey(),dp:Math.min(50,Math.round(spTot(spDay()))),dn:dayNum(),at:Date.now(),ts:firebase.firestore.FieldValue.serverTimestamp()})}catch(e){}}
+async function ligPush(){try{await CLOUD;if(!DB||!UID||P.mem==null)return;var wk=weekKey();if(P.ligW!==wk)return;await DB.collection("lig").doc(UID).set({w:wk,il:P.mem,p:P.ligP||0,m:P.ligM||0,ad:String(nmF(P.nick)||"").slice(0,16),j:P.memAt||0,lv:lvOf(P.xp),d:dayKey(),dp:Math.min(50,Math.round(spTot(spDay()))),dn:dayNum(),at:Date.now(),ts:firebase.firestore.FieldValue.serverTimestamp()})}catch(e){}}
 function ilOpts(sel){return MAP.il.slice().sort(function(a,b){return a.n.localeCompare(b.n,"tr")}).map(function(x){return "<option value='"+x.id+"'"+(x.id===sel?" selected":"")+">"+esc(x.n)+"</option>"}).join("")}
 function memPick(after,force){if(!memCanFix()){modal("<button class='x' data-x='mOv'>✕</button><h3>🏛️ Memleketin</h3><p><b>"+esc(IL[P.mem].n)+"</b>. Memleket kalıcıdır, dernekten ayrılınmaz 🙂</p>");return}
   modal((force?"<i data-lock></i>":"<button class='x' data-x='mOv'>✕</button>")+"<h3>🏠 Memleketin neresi?</h3><p class='mut' style='margin-top:-6px'>"+(DERNEK?"Seçtiğin ilin derneğine üye olursun. <b>Memleket kalıcıdır</b>":"Puanların bu ile yazılır")+(!DERNEK?".":P.mem==null?"; yanlış seçersen ilk 24 saatte bir kez düzeltebilirsin.":". Bu senin tek düzeltme hakkın.")+"</p>"+
   "<select id='memSel' style='width:100%;padding:12px;border-radius:12px;background:var(--bg);color:var(--tx);border:2px solid var(--bg3);font-size:17px'>"+(P.mem==null?"<option value=''>İl seç…</option>":"")+ilOpts(P.mem)+"</select><div class='lbl' style='margin-top:10px'>Takma adın ("+(DERNEK?"dernekte":"ligde")+" görünür)</div><input id='memNick' maxlength='16' value='"+esc(P.nick||"")+"' placeholder='ör. Çorumlu Leblebi' style='width:100%;padding:12px;border-radius:12px;background:var(--bg);color:var(--tx);border:2px solid var(--bg3);font-size:16px'>"+
   "<button class='btn y' id='memOk' style='width:100%;margin-top:10px'>Kaydet</button>");
-  $("memOk").onclick=function(){var v=$("memSel").value;if(v===""){toast("Bir il seç");return}var nk=String($("memNick").value||"").trim().slice(0,16);if(!nk){toast("Bir takma ad yaz");return}
+  $("memOk").onclick=function(){var v=$("memSel").value;if(v===""){toast("Bir il seç");return}var nk=String($("memNick").value||"").trim().slice(0,16);if(!nk){toast("Bir takma ad yaz");return}if(badNm(nk)){toast("🚫 Bu takma ad uygun değil, başka bir ad yaz");return}
     if(P.mem==null){P.memAt=NOW();P.memGrace=NOW()}else if(+v!==P.mem)P.memFix=1;P.mem=+v;P.nick=nk;saveP();ligPush();toast(DERNEK?"🏛️ "+drN(P.mem)+" üyesisin!":"🏠 Memleketin: "+IL[P.mem].n);renderHome();if(after)after();else if(DERNEK)drOpen("pano");else renderLig()}}
 var LIGC="ort",MINP=3;
 async function ligFetch(wk){await CLOUD;if(!DB)return null;var q=await DB.collection("lig").where("w","==",wk).get();return q.docs.map(function(d){var x=d.data();return{id:d.id,il:+x.il,p:+x.p||0,m:+x.m||0,ad:String(x.ad||"").slice(0,16)}}).filter(function(x){return IL[x.il]&&x.p>=0&&x.p<=700})}
@@ -1500,7 +1501,7 @@ async function renderLig(){if(P.mem==null){memPick();return}lqFix();
     h+=agg.length?agg.slice(0,30).map(function(a,i){return "<div class='rk' style='border-color:"+(i<3?"#facc15":"#334155")+(a.il===P.mem?";outline:2px solid var(--acc)":"")+"'><span class='m'>"+(md[i]||(i+1)+".")+"</span><span style='flex:1'>"+esc(IL[a.il].n)+"<div class='mut' style='font-size:11px'>"+a.n+" oyuncu"+(LIGC==="ort"?" · toplam "+fmt(a.p)+(a.ok?"":" · sıralama için en az "+MINP+" oyuncu"):" · ort. "+a.avg)+"</div></span><b"+(LIGC==="ort"&&!a.ok?" class='mut'":"")+">"+(LIGC==="ort"?a.avg:fmt(a.p))+"</b></div>"}).join(""):"<p class='mut'>Bu hafta henüz kimse puan almadı. İlk sen ol! 👑</p>";
     var mates=rows.filter(function(r){return r.il===P.mem}).sort(function(a,b){return b.p-a.p}).slice(0,10);
     if(mates.length){var nm={};try{nm=USR&&UID!==P.dev?await USR.profiles(mates.map(function(r){return r.id})):{}}catch(e){}
-      h+="<h3 style='margin-top:14px'>"+esc(IL[P.mem].n)+" takımı</h3>"+mates.map(function(r,i){var n=r.ad||(nm[r.id]&&nm[r.id].name)||"Biri";return "<div class='rw'><span>"+(i+1)+". "+esc(n)+(r.id===UID?" (sen)":"")+"</span><b>"+fmt(r.p)+"</b></div>"}).join("")}
+      h+="<h3 style='margin-top:14px'>"+esc(IL[P.mem].n)+" takımı</h3>"+mates.map(function(r,i){var n=nmF(r.ad)||(nm[r.id]&&nm[r.id].name)||"Biri";return "<div class='rw'><span>"+(i+1)+". "+esc(n)+(r.id===UID?" (sen)":"")+"</span><b>"+fmt(r.p)+"</b></div>"}).join("")}
     h+="<p class='mut' style='font-size:12px;margin-top:10px'>"+(DERNEK?"Her üye günde en çok 100 savaş puanı katar (sınav 50, maç 30, görev 20).":"Her gün 10 soruluk sınav, her doğru 10 puan.")+" <b>Ortalama</b>: oyuncu başına puan, kalabalık il avantajlı olmasın diye. <b>Toplam</b>: ilin bütün puanı. Lig her pazartesi sıfırlanır.</p>";
     box().innerHTML=h}catch(e){clearTimeout(to);if(box())box().innerHTML="<p class='mut'>Sıralama okunamadı.</p>"}}
 $("bRef").onclick=openRef;setTimeout(refSync,4000);setTimeout(champSync,2500);
@@ -1512,7 +1513,23 @@ function isH(p){return p.i===ME||!!p.remote}
 function rmCode(){var a="ABCDEFGHJKLMNPRSTUVYZ23456789",c="";for(var i=0;i<4;i++)c+=a[Math.floor(Math.random()*a.length)];return c}
 function rmEmit(k,d){if(!RM||!RM.r)return;d=d||{};d.k=k;RM.r.emit(RM.host?"g":"c",d).catch(function(){})}
 async function rmNames(peers){var ids=peers.map(function(p){return p.by}).filter(function(x){return x&&!RM.names[x]});if(ids.length&&USR){try{var pr=await USR.profiles(ids);ids.forEach(function(id){RM.names[id]=(pr[id]&&pr[id].name)||""})}catch(e){}}}
-function rmName(p,i){var n=(p.presence&&p.presence.nm)||(p.by&&RM.names[p.by]);return n?String(n).split(" ")[0].slice(0,14):"Oyuncu "+(i+1)}
+/* ---------- takma ad küfür filtresi ---------- */
+var BADL=["orospu","orspu","orosbu","amcik","amina","aminakoy","aminakoyim","yarrak","yarrag","sikis","siktir","sikerim","sikeyim","sikik","sikim","siksen","sikicem","sokuk","gotveren","gotlek","kahpe","pezevenk","pezeveng","yavsak","serefsiz","kaltak","fahise","dassak","tassak","dasak","tasak","porno","fuck","bitch","pussy","whore","nigger","nigga","penis","vajina","hitler","ibne","gavat","kevase","amciy","oruspu","yarag","amcık","amına","amınako"],
+    BADT=["sik","sk","amk","amq","aq","am","got","pic","oc","mk","mq","sg","sex","seks","pust","ipne","yarak","dick","cock","ass","bok","sikko"],
+    BADP=["sik","got","pic","pust","amk"],
+    OKP=["sikke","siklon","siklet","gotur","gotik","goth","pice","picas","amkara"];
+function nmFold(x){return String(x||"").toLocaleLowerCase("tr").replace(/[0134578@$€!|]/g,function(c){return {"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t","8":"b","@":"a","$":"s","€":"e","!":"i","|":"i"}[c]}).replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").replace(/[âà]/g,"a").replace(/[îì]/g,"i").replace(/[ûù]/g,"u")}
+function nmCol(x){return x.replace(/(.)\1+/g,"$1")}
+function badNm(x){var f=nmFold(x),c=f.replace(/[^a-zı]/g,""),cc=nmCol(c),cn=nmCol(c.replace(/ı/g,"i"));
+  if(BADL.some(function(w){return c.indexOf(w)>=0||(w!=="yarrak"&&w!=="yarrag"&&cc.indexOf(nmCol(w))>=0)}))return true;
+  if(cn.indexOf("orospu")>=0||cn.indexOf("amina")>=0)return true;
+  var toks=f.split(/[^a-zı]+/).filter(Boolean).map(nmCol);
+  if(toks.some(function(t){return BADT.indexOf(t)>=0||(BADP.some(function(b){return t.indexOf(b)===0})&&!OKP.some(function(o){return t.indexOf(nmCol(o))===0}))}))return true;
+  // harfleri boşlukla ayırıp yazma (s i k, a m k)
+  var sp=f.split(/[^a-zı]+/).filter(Boolean);if(sp.length>=2&&sp.every(function(t){return t.length<=2})){var j=nmCol(sp.join(""));if(BADT.indexOf(j)>=0||BADP.some(function(b){return j.indexOf(b)===0}))return true}
+  return false}
+function nmF(x){return x&&badNm(x)?"Oyuncu":x}
+function rmName(p,i){var n=(p.presence&&p.presence.nm)||(p.by&&RM.names[p.by]);n=n?String(n).split(" ")[0].slice(0,14):"";return n&&!badNm(n)?n:"Oyuncu "+(i+1)}
 function rmPlayers(){if(!RM)return[];var ps=RM.r.peers().filter(function(p){return p.kind==="viewer"&&p.presence&&p.presence.role});
   ps.sort(function(a,b){return (b.presence.role==="host")-(a.presence.role==="host")||(a.presence.t||0)-(b.presence.t||0)});return ps.slice(0,4)}
 async function openRoom(){var rc=await ROOMCAP;await CLOUD;
@@ -1521,7 +1538,7 @@ async function openRoom(){var rc=await ROOMCAP;await CLOUD;
   modal("<button class='x' data-x='mOv'>✕</button><h3>👥 Arkadaşınla oyna</h3><p class='mut' style='margin-top:-6px'>Odayı kur, 4 haneli kodu arkadaşına söyle. O da \"Koda katıl\" deyip kodu yazsın. Boş koltuklara bot oturur.</p>"+
    "<div class='lbl'>Adın (odada görünür)</div><input id='rNick' maxlength='14' value='"+esc(P.nick||"")+"' placeholder='ör. Kanka' style='width:100%;padding:12px;border-radius:12px;background:var(--bg);color:var(--tx);border:2px solid var(--bg3);font-size:16px;margin-bottom:10px'>"+
    "<button class='btn p' id='rNew' style='width:100%;font-size:17px'>➕ Oda kur</button><div class='lbl' style='margin-top:14px'>Arkadaşının oda kodu</div><div class='num'><input id='rCode' maxlength='4' placeholder='ABCD' style='text-transform:uppercase;letter-spacing:6px' autocomplete='off'><button class='btn y' id='rJoin'>Koda katıl</button></div>");
-  function nk(){var v=String($("rNick").value||"").trim().slice(0,14);if(v!==(P.nick||"")){P.nick=v;saveP()}}
+  function nk(){var v=String($("rNick").value||"").trim().slice(0,14);if(v&&badNm(v)){toast("🚫 Bu takma ad uygun değil");$("rNick").value=P.nick||"";return}if(v!==(P.nick||"")){P.nick=v;saveP()}}
   if(P.lastRoom&&Date.now()-P.lastRoom.t<3*3600e3&&(!P.lastRoom.h||gResR())){$("rNew").insertAdjacentHTML("beforebegin","<button class='btn y' id='rBack' style='width:100%;margin-bottom:8px'>↩ Son odaya geri dön ("+esc(P.lastRoom.c)+")"+(P.lastRoom.h?" · maç kaldığın yerden":"")+"</button>");$("rBack").onclick=function(){nk();if(P.lastRoom.h)gResumeR();else rmJoin(P.lastRoom.c,false)}}
   $("rNew").onclick=function(){nk();rmJoin(rmCode(),true)};
   $("rJoin").onclick=function(){var c=String($("rCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(c.length!==4){toast("Kod 4 karakter olmalı");return}nk();rmJoin(c,false)};
@@ -1531,7 +1548,7 @@ async function rmJoin(code,host){var rc=await ROOMCAP;if(!rc)return;
   var r;try{r=await rc.join("il-"+code.toLowerCase())}catch(e){toast("Odaya bağlanılamadı");openRoom();return}
   RM={r:r,code:code,host:host,names:{},pend:{},seq:host?Math.floor(Date.now()/1000)%1e8:0,done:{},busy:{},wq:{},unsub:[],bots:true,me:null,myBy:null,hostPeer:null,cls:CLS[P.cls]?P.cls:null,gone:{}};
   P.lastRoom={c:code,h:host,t:Date.now()};saveP();
-  r.presence({role:host?"host":"guest",av:myAv(),nm:String(P.nick||"").slice(0,14),cls:RM.cls,sn:mySeenStr(),t:Date.now()}).catch(function(){});
+  r.presence({role:host?"host":"guest",av:myAv(),nm:String(nmF(P.nick)||"").slice(0,14),cls:RM.cls,sn:mySeenStr(),t:Date.now()}).catch(function(){});
   RM.unsub.push(r.onPeers(function(ch){var me=ch.peers.filter(function(p){return p.sameTab})[0];if(me){RM.me=me.peer;RM.myBy=me.by||RM.myBy}
     rmNames(ch.peers).then(function(){if($("rLob"))rmLobby()});
     if(!RM.host){var h=ch.peers.filter(function(p){return p.presence&&p.presence.role==="host"})[0];if(h)RM.hostPeer=h.peer;
@@ -1565,7 +1582,7 @@ function rmLobby(){if(!RM)return;var ps=rmPlayers(),all=RM.r.peers().filter(func
      "<div class='act'><button class='btn' id='rShare'>📤 Kodu paylaş</button><button class='btn p' id='rGo'"+(ps.length<2?" disabled":"")+">⚔️ Başlat</button></div>"+(ps.length<2?"<p class='mut' style='font-size:12px;text-align:center'>Başlatmak için en az bir arkadaşın odaya girmeli.</p>":"")}
   else h+="<p style='text-align:center;margin-top:12px'>Kurucunun maçı başlatması bekleniyor<span class='dotl'><span>.</span><span>.</span><span>.</span></span></p>";
   modal(h);if(RM.host)catChips("rCat");$("rX").onclick=function(){close("mOv");if(!(G&&(G.room||G.client)&&!G.over)){rmQuit()}};
-  $("mBox").querySelectorAll("[data-cls]").forEach(function(b){b.onclick=function(){var k=b.dataset.cls;if(!CLS[k]||!RM)return;RM.cls=k;P.cls=k;saveP();RM.r.presence({role:RM.host?"host":"guest",av:myAv(),nm:String(P.nick||"").slice(0,14),cls:k,sn:mySeenStr(),t:Date.now()}).catch(function(){});SND.ok();rmLobby()}});
+  $("mBox").querySelectorAll("[data-cls]").forEach(function(b){b.onclick=function(){var k=b.dataset.cls;if(!CLS[k]||!RM)return;RM.cls=k;P.cls=k;saveP();RM.r.presence({role:RM.host?"host":"guest",av:myAv(),nm:String(nmF(P.nick)||"").slice(0,14),cls:k,sn:mySeenStr(),t:Date.now()}).catch(function(){});SND.ok();rmLobby()}});
   if(RM.host){segSet("rLen",SET.len);seg("rLen",function(v){SET.len=v;saveSet()});$("rBot").onclick=function(){RM.bots=!RM.bots;rmLobby()};
     $("rShare").onclick=function(){share("⚔️ Bilgi Savaşı'nda odama gel!\nOyunu aç → 👥 Arkadaşınla oyna → kod: "+RM.code)};
     $("rGo").onclick=function(){var ps=rmPlayers();if(ps.length<2)return;close("mOv");rmStart(ps)}}}
@@ -1976,7 +1993,7 @@ var EMO=["👏","💪","🔥","😂","😤","🫡","⚔️","🏆"];
 async function tPano(B){var n=wkN(),il=P.mem,rows=await ligW(n),mem=memOf(rows,il),bk=await baskan(il,n),s=spDay(),tot=spTot(s),dk=dayKey();
   var today=mem.filter(function(r){return r.d===dk&&(+r.dp||0)>0}).sort(function(a,b){return b.dp-a.dp}),dsum=today.reduce(function(a,r){return a+(+r.dp||0)},0);
   var agg=ligAgg(rows),rk=agg.findIndex(function(a){return a.il===il}),av=avgOf(rows,il);
-  var h="<div class='card'><div class='rw'><span>👑 Başkan</span><b>"+esc(bk.ad)+(bk.mode==="aktif"?" <small class='mut'>(en aktif)</small>":"")+"</b></div><div class='rw'><span>👥 Bu hafta aktif üye</span><b>"+mem.length+"</b></div><div class='rw' style='border:0'><span>📊 Haftalık ortalama</span><b>"+(Math.round(av*10)/10)+(rk>=0?" · "+(rk+1)+". sıra":"")+"</b></div></div>"+
+  var h="<div class='card'><div class='rw'><span>👑 Başkan</span><b>"+esc(nmF(bk.ad)||"Oyuncu")+(bk.mode==="aktif"?" <small class='mut'>(en aktif)</small>":"")+"</b></div><div class='rw'><span>👥 Bu hafta aktif üye</span><b>"+mem.length+"</b></div><div class='rw' style='border:0'><span>📊 Haftalık ortalama</span><b>"+(Math.round(av*10)/10)+(rk>=0?" · "+(rk+1)+". sıra":"")+"</b></div></div>"+
    "<div class='lbl' style='margin-top:12px'>🛡️ Bugünkü nöbetin</div><div class='card'><div class='bar' style='height:10px'><i style='width:"+tot+"%'></i></div><div style='text-align:center;margin:6px 0;font-weight:800'>"+tot+"/100 savaş puanı</div>"+
    "<div class='rw'><span>📝 Günün sınavı <small class='mut'>(doğru başı 5)</small></span><b>"+(lqDone()?Math.min(50,s.s)+"/50 ✓":"<button class='btn y sm' id='pSin'>Başla</button>")+"</b></div>"+
    "<div class='rw'><span>🎮 Bir maç bitir</span><b>"+(s.m?"30/30 ✓":"<button class='btn sm' id='pMac'>Oyna</button>")+"</b></div>"+
@@ -1989,7 +2006,7 @@ async function tPano(B){var n=wkN(),il=P.mem,rows=await ligW(n),mem=memOf(rows,i
   if($("pSin"))$("pSin").onclick=lqStart;if($("pMac"))$("pMac").onclick=function(){close("mOv");newGame()};if($("pGor"))$("pGor").onclick=renderQuest;
   $("pInv").onclick=function(){share("🏛️ "+drN(il)+" sana ihtiyaç var! Gel derneğe katıl, Kurultay'da birlikte kapışalım ⚔️\n"+refMsg())};
   $("pEmo").onclick=async function(e){var b=e.target.closest("[data-e]");if(!b)return;if(Date.now()-(P.emoT||0)<10000){toast("Biraz bekle 🙂");return}P.emoT=Date.now();saveP();
-    await dset("tepki","t_"+UID,{il:il,e:b.dataset.e,ad:String(P.nick||"").slice(0,16),at:NOW()});delete DC["tepki|il|"+il];toast(b.dataset.e+" gönderildi");loadTep()};
+    await dset("tepki","t_"+UID,{il:il,e:b.dataset.e,ad:String(nmF(P.nick)||"").slice(0,16),at:NOW()});delete DC["tepki|il|"+il];toast(b.dataset.e+" gönderildi");loadTep()};
   async function loadTep(){var T=(await dqc("tepki","il",il,8000)).filter(function(t){return NOW()-(t.at||0)<3*864e5&&EMO.indexOf(t.e)>=0}).sort(function(a,b){return b.at-a.at}).slice(0,12);
     var e=$("pTep");if(e)e.innerHTML=T.length?T.map(function(t){return "<div class='rw'><span>"+esc(nm(t))+"</span><span><span style='font-size:20px'>"+t.e+"</span> <small class='mut'>"+ago(t.at)+"</small></span></div>"}).join(""):"<span class='mut'>Henüz tepki yok. İlk sen gönder!</span>"}
   loadTep()}
@@ -2045,15 +2062,15 @@ async function tKur(B){var n=wkN(),now=NOW(),k=kurT0(n),e=kurEnd(n),h="";
 async function tBas(B){var n=wkN(),s=seaN(n),il=P.mem,bk=await baskan(il,n),now=NOW(),elec=elecOpen(n),lv=lvOf(P.xp);
   var cur=memOf(await ligW(n),il),prev=memOf(await ligW(n-1),il),played=cur.concat(prev).some(function(r){return r._id===UID}),canVote=DTEST||(played&&(P.memAt||0)<=Math.min(NOW(),elecEnd(s))-7*864e5);
   var R=[];for(var w=s*4;w<(ended(n)?n+1:n);w++){var x=await sonucGet(w);if(x)R.push(x)}var won=0,lost=0,bd=[0,0];R.forEach(function(x){x.r.forEach(function(r){if(r.a===il||r.d===il){if((r.a===il)===(r.win==="a"))won++;else lost++}});var k=x.k[il];if(k){bd[0]+=k[2]||0;bd[1]+=k[3]||0}});
-  var h="<div class='card' style='text-align:center'><div style='font-size:40px'>👑</div><b style='font-size:20px'>"+esc(bk.ad)+"</b><div class='mut' style='font-size:13px'>"+(bk.mode==="secim"?"Seçimle başkan · "+bk.v+" oy":DTEST?"Seçilmiş başkan yok, şimdilik en aktif üye başkan. Aday ol, oy topla!":bk.act<5?"Derneğimiz 5 aktif üyeye ulaşınca seçim yapılır. Şimdilik haftanın en aktif üyesi başkan.":"Seçim yapılmadı, haftanın en aktif üyesi başkan.")+"</div>"+
+  var h="<div class='card' style='text-align:center'><div style='font-size:40px'>👑</div><b style='font-size:20px'>"+esc(nmF(bk.ad)||"Oyuncu")+"</b><div class='mut' style='font-size:13px'>"+(bk.mode==="secim"?"Seçimle başkan · "+bk.v+" oy":DTEST?"Seçilmiş başkan yok, şimdilik en aktif üye başkan. Aday ol, oy topla!":bk.act<5?"Derneğimiz 5 aktif üyeye ulaşınca seçim yapılır. Şimdilik haftanın en aktif üyesi başkan.":"Seçim yapılmadı, haftanın en aktif üyesi başkan.")+"</div>"+
    "<div class='rw' style='margin-top:8px'><span>Bu sezon savaşlar</span><b>"+won+" galibiyet · "+lost+" yenilgi</b></div><div class='rw' style='border:0'><span>Kurultay kararları</span><b>"+bd[0]+" doğru · "+bd[1]+" yanlış</b></div></div>";
   if(bk.fell&&bk.fell.length)h+="<p class='mut' style='font-size:13px'>⬇️ Güvensizlik oylamasıyla düşen: "+bk.fell.map(esc).join(", ")+"</p>";
   if(elec&&(DTEST||bk.act>=5)){var me=bk.cands.some(function(c){return c.u===UID}),myV=(await dqc("secim","s",s,5000)).filter(function(v){return uidOf(v)===UID})[0];
     h+="<div class='card' style='margin-top:10px;border:1px solid #f59e0b'><b>🗳️ Başkanlık seçimi açık</b><div class='mut' style='font-size:13px'>"+(DTEST?"🧪 Deneme modunda seçim hep açık, oyunu istediğin an değiştirebilirsin":"Kapanışa "+hhmm(elecEnd(s)-now))+"</div></div>";
     if(!me)h+=(DTEST||(lv>=5&&played)?"<button class='btn y' id='bAd' style='width:100%;margin-top:8px'>✋ Başkanlığa aday ol</button>":"<p class='mut' style='font-size:12px'>Aday olmak için seviye 5 olmalı ve son 2 haftada savaş puanı kazanmış olmalısın.</p>");
-    h+="<div class='lbl' style='margin-top:10px'>Adaylar</div>"+(bk.cands.length?bk.cands.map(function(c){return "<button class='vrow"+(myV&&myV.c===c.u?" on":"")+"' data-c='"+c.u+"'><span style='flex:1;text-align:left'><b>"+esc(c.ad)+"</b><small class='mut'> · Sv."+c.lv+"</small></span><b>"+c.v+" oy</b></button>"}).join(""):"<p class='mut'>Henüz aday yok.</p>")+
+    h+="<div class='lbl' style='margin-top:10px'>Adaylar</div>"+(bk.cands.length?bk.cands.map(function(c){return "<button class='vrow"+(myV&&myV.c===c.u?" on":"")+"' data-c='"+c.u+"'><span style='flex:1;text-align:left'><b>"+esc(nmF(c.ad)||"Oyuncu")+"</b><small class='mut'> · Sv."+c.lv+"</small></span><b>"+c.v+" oy</b></button>"}).join(""):"<p class='mut'>Henüz aday yok.</p>")+
      (canVote?"":"<p class='mut' style='font-size:12px'>Oy vermek için en az 7 gündür dernekte olmalı ve son 2 haftada oynamış olmalısın.</p>");
-    B.innerHTML=h;if($("bAd"))$("bAd").onclick=async function(){await dset("aday",s+"_"+UID,{s:s,il:il,ad:String(P.nick||"Hemşehri").slice(0,16),lv:lv,at:NOW()});delete DC["aday|s|"+s];toast("✋ Adaylığın açıklandı");tBas(B)};
+    B.innerHTML=h;if($("bAd"))$("bAd").onclick=async function(){await dset("aday",s+"_"+UID,{s:s,il:il,ad:String(nmF(P.nick)||"Hemşehri").slice(0,16),lv:lv,at:NOW()});delete DC["aday|s|"+s];toast("✋ Adaylığın açıklandı");tBas(B)};
     B.onclick=async function(e){var b=e.target.closest("[data-c]");if(!b)return;if(!canVote){toast("Henüz oy veremezsin");return}await dset("secim",s+"_"+UID,{s:s,il:il,c:b.dataset.c,j:P.memAt||0,at:NOW()});delete DC["secim|s|"+s];toast("🗳️ Oy verdin");tBas(B)};return}
   if(bk.mode==="secim"&&bk.u!==UID){var G=(await dqc("guven","s",s,5000)).filter(function(x){return +x.il===il&&x.g===bk.u}),myG=G.filter(function(x){return uidOf(x)===UID})[0],gv=G.filter(function(x){return x.v===1}).length;
     h+="<div class='card' style='margin-top:10px'><b>⚖️ Güvensizlik oylaması</b><div class='mut' style='font-size:13px;margin:4px 0 8px'>Başkanı düşürmek için "+bk.need+" üye gerekiyor · şu an "+gv+"</div><button class='btn' id='bGv' style='width:100%' "+(canVote?"":"disabled")+">"+(myG&&myG.v===1?"↩️ Güvensizlik oyumu geri çek":"👎 Başkana güvenmiyorum")+"</button></div>";
@@ -2065,7 +2082,7 @@ var KUR=null;
 async function kurOpen(){var n=wkN(),il=P.mem;close("mOv");var ov=$("kurOv");ov.classList.add("on");ov.innerHTML="<div class='kbox'><p class='mut'>Kurultaya bağlanılıyor…</p></div>";
   var own=await ownerStart(n),W=(await warsOf(n,own)).w.filter(function(w){return w.a===il||w.d===il}),opp=W.map(function(w){return w.a===il?w.d:w.a}),bk=await baskan(il,n);
   var bkO={};for(var i=0;i<opp.length;i++)bkO[opp[i]]=(await baskan(opp[i],n)).u;
-  var id=n+"_"+UID,doc=await dget("kur",id)||{w:n,k:n+"_"+il,il:il,a:"-".repeat(KQ),t:[],b:"-".repeat(KQ),g:null};doc.ad=String(P.nick||"").slice(0,16);doc.at=NOW();
+  var id=n+"_"+UID,doc=await dget("kur",id)||{w:n,k:n+"_"+il,il:il,a:"-".repeat(KQ),t:[],b:"-".repeat(KQ),g:null};doc.ad=String(nmF(P.nick)||"").slice(0,16);doc.at=NOW();
   KUR={n:n,il:il,W:W,opp:opp,bk:bk.u,bkAd:bk.ad,bkO:bkO,doc:id,d:doc,Q:kurQs(n),num:kurNum(n),T0:kurT0(n),ph:"",docs:{},rows:await ligW(n)};
   await dset("kur",id,doc);if(KUR.tk)clearInterval(KUR.tk);KUR.tk=setInterval(kurTick,250);kurTick()}
 function kurSave(){var K=KUR;K.d.at=NOW();return dset("kur",K.doc,K.d)}

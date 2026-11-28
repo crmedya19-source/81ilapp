@@ -1441,13 +1441,13 @@ function fbRoom(F){var me="p"+Math.random().toString(36).slice(2,12),joined={};
   return{join:async function(name){if(joined[name])return joined[name];var base=F.rt.ref("rooms/"+name),pref=base.child("presence/"+me),evr=base.child("ev"),myP={},list=[],t0=Date.now()-2000,conn=false,subs=[],tsubs={},cleanup=[];
       pref.onDisconnect().remove();await pref.set({by:F.uid,p:{},at:firebase.database.ServerValue.TIMESTAMP});
       try{F.rt.ref("roomT/"+name).set(firebase.database.ServerValue.TIMESTAMP).catch(function(){});
-        evr.orderByChild("t").endAt(Date.now()-6e5).limitToFirst(300).once("value").then(function(s){s.forEach(function(c){c.ref.remove().catch(function(){})})}).catch(function(){});
+        evr.orderByChild("t").endAt(Date.now()+(window.SOFF||0)-6e5).limitToFirst(300).once("value").then(function(s){s.forEach(function(c){c.ref.remove().catch(function(){})})}).catch(function(){});
         if(!window.__rmClean){window.__rmClean=1;F.rt.ref("roomT").orderByValue().endAt(Date.now()-12*3600e3).limitToFirst(30).once("value").then(function(s){s.forEach(function(c){if(c.key===name)return;F.rt.ref("rooms/"+c.key).remove().catch(function(){});c.ref.remove().catch(function(){})})}).catch(function(){})}}catch(e){}
       var cref=F.rt.ref(".info/connected"),cfn=cref.on("value",function(s){conn=!!s.val();if(conn)pref.onDisconnect().remove().then(function(){return pref.update({by:F.uid,p:myP})}).catch(function(){})});
       var prs=base.child("presence"),pfn=prs.on("value",function(s){var v=s.val()||{},old={},nl=[],j=[],l=[],u=[];list.forEach(function(p){old[p.peer]=p});
         Object.keys(v).forEach(function(id){var p=mkPeer(id,v[id],old[id]);if(old[id]&&old[id].updatedAt===p.updatedAt)p=old[id];nl.push(p);if(!old[id])j.push(p);else if(p!==old[id])u.push(p)});
         list.forEach(function(p){if(!v[p.peer])l.push(p)});list=Object.freeze(nl);var ch={peers:list,joined:j,left:l,updated:u};subs.forEach(function(f){try{f(ch)}catch(e){}})});
-      var q=evr.orderByChild("t").startAt(t0),efn=q.on("child_added",function(s){var m=s.val();if(!m||!m.topic)return;var msg={topic:m.topic,data:m.data==null?undefined:JSON.parse(m.data),peer:m.peer,by:m.by||null,isMe:m.peer===me,sameTab:m.peer===me,kind:"viewer",guest:false};
+      var off=0;try{off=+(await F.rt.ref(".info/serverTimeOffset").once("value")).val()||0}catch(e){}t0=Date.now()+off-5000;var q=evr.orderByChild("t").startAt(t0),efn=q.on("child_added",function(s){var m=s.val();if(!m||!m.topic)return;var msg={topic:m.topic,data:m.data==null?undefined:JSON.parse(m.data),peer:m.peer,by:m.by||null,isMe:m.peer===me,sameTab:m.peer===me,kind:"viewer",guest:false};
         (tsubs[m.topic]||[]).forEach(function(f){try{f(msg)}catch(e){}})});
       var R={name:name,
         emit:async function(topic,data){var k=evr.push();await k.set({topic:topic,data:data===undefined?null:JSON.stringify(data),peer:me,by:F.uid,t:firebase.database.ServerValue.TIMESTAMP});setTimeout(function(){k.remove().catch(function(){})},90000)},

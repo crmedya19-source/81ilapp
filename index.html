@@ -1418,7 +1418,8 @@ async function gLogin(btn,gate){var SL=gPlug();if(!SL){toast("Google girişi uyg
     try{if(!au.currentUser)throw{code:"auth/credential-already-in-use"};u=(await au.currentUser.linkWithCredential(cred)).user;F.uid=u.uid;await cloudPush();toast("✓ Google hesabın bağlandı, ilerlemen güvende");if(gate)gGateDone();else profOpen()}
     catch(e){if(!e||(e.code!=="auth/credential-already-in-use"&&e.code!=="auth/email-already-in-use"))throw e;
       u=(await au.signInWithCredential(e.credential||cred)).user;F.uid=u.uid;try{UID=u.uid}catch(x){}gGateDone();await cloudPull(gate)}
-  }catch(e){console.warn("google",e);var m=(e&&(e.code||e.message))||"hata";if(!/cancel|iptal|16:|canceled/i.test(String(m)))toast("Giriş yapılamadı: "+m);if(btn&&btn.isConnected){btn.disabled=false;btn.innerHTML="<span class='gG'>G</span>Google ile giriş yap"}}}
+  }catch(e){console.warn("google",e);var m=[e&&e.code,e&&e.message,e&&e.errorMessage].filter(Boolean).join(" · ")||String(e);
+    if(!/user cancel|canceled by user|cancelled by user|kullanıcı/i.test(m))modal("<button class='x' data-x='mOv'>✕</button><h3>Google girişi tamamlanamadı</h3><p class='mut'>Bu yazının ekran görüntüsünü geliştiriciye gönder:</p><div class='card' style='font-family:monospace;font-size:12px;word-break:break-all'>"+esc(m.slice(0,400))+"<br>v"+APPV+"</div><button class='btn' data-x='mOv' style='width:100%'>Tamam</button>");if(btn&&btn.isConnected){btn.disabled=false;btn.innerHTML="<span class='gG'>G</span>Google ile giriş yap"}}}
 async function gLogout(){if(!confirm2())return;P.gIn=0;try{await cloudPush();var SL=gPlug();if(SL)try{await SL.logout({provider:"google"})}catch(e){}await firebase.auth().signOut()}catch(e){}FBP=null;toast("Çıkış yapıldı");setTimeout(function(){location.reload()},700)}
 function confirm2(){return true}
 function gCard(){if(inClaude())return "";var u=gUser();

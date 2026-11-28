@@ -1094,7 +1094,7 @@ $("bSet").onclick=function(){modal("<button class='x' data-x='mOv'>✕</button><
  segSet("sTime",SET.time);seg("sTime",function(v){SET.time=v;saveSet()});segSet("sFast",SET.fast?1:0);seg("sFast",function(v){SET.fast=!!v;saveSet()});
  $("tSnd").onclick=function(){SET.snd=!SET.snd;saveSet();this.textContent=SET.snd?"Açık":"Kapalı"};
  $("tVib").onclick=function(){SET.vib=!SET.vib;saveSet();this.textContent=SET.vib?"Açık":"Kapalı"};
- if($("tNtf"))$("tNtf").onclick=async function(){SET.ntf=SET.ntf===false;saveSet();this.textContent=SET.ntf===false?"Kapalı":"Açık";if(SET.ntf!==false){P.ntfAsk=0;await ntfAsk()}ntfPlan()};
+ if($("tNtf"))$("tNtf").onclick=async function(){SET.ntf=SET.ntf===false;saveSet();this.textContent=SET.ntf===false?"Kapalı":"Açık";if(SET.ntf!==false){P.ntfAsk=0;await ntfAsk()}ntfPlan();pushInit()};
  $("tRst").onclick=function(){if(this.dataset.c){localStorage.clear();location.reload()}else{this.dataset.c=1;this.textContent="Emin misin? Tekrar dokun"}}};
 function dayTick(){var t=today();if(P.lastDay===t)return;var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();P.dayStreak=P.lastDay===ys?P.dayStreak+1:1;P.lastDay=t;P.dayBest=Math.max(P.dayBest||0,P.dayStreak);streakGift(P.dayStreak);saveP();ntfPlan()}
 
@@ -1144,10 +1144,21 @@ function streakInfo(){var n=P.dayStreak||0,nx=n<3?3:Math.ceil((n+1)/7)*7;
 /* ---------- bildirimler (telefonun kendi hatırlatıcısı, sunucu yok) ---------- */
 function LNp(){var CP=window.Capacitor&&window.Capacitor.Plugins;return NAT&&CP&&CP.LocalNotifications?CP.LocalNotifications:null}
 function ntfText(){var n=P.dayStreak||0;return n>=2?"🔥 "+n+" günlük serin bozulmasın! Günün Haritası ve memleket sınavı seni bekliyor.":"🗺️ Günün Haritası hazır! "+(P.mem!=null?"Memleketinin 10 sorusu da seni bekliyor.":"Bakalım bugün kaç il alacaksın?")}
-async function ntfPlan(){var LN=LNp();if(!LN)return;try{await LN.cancel({notifications:[{id:81},{id:82}]});if(SET.ntf===false)return;var p=await LN.checkPermissions();if(p.display!=="granted")return;
-  var a=new Date();a.setDate(a.getDate()+1);a.setHours(19,0,0,0);var b=new Date(a);b.setDate(b.getDate()+2);
-  await LN.schedule({notifications:[{id:81,title:"Bilgi Savaşı",body:ntfText(),schedule:{at:a,allowWhileIdle:true}},{id:82,title:"Bilgi Savaşı",body:"⚔️ Haritadaki yerin seni bekliyor. Yeni sorular da geldi!",schedule:{at:b,allowWhileIdle:true}}]})}catch(e){}}
-async function ntfAsk(){var LN=LNp();if(!LN||P.ntfAsk||SET.ntf===false)return;P.ntfAsk=1;saveP();try{var p=await LN.requestPermissions();if(p.display==="granted")ntfPlan()}catch(e){}}
+async function ntfPlan(){var LN=LNp();if(!LN)return;try{await LN.cancel({notifications:[81,82,83,84,85,86,87].map(function(i){return {id:i}})});if(SET.ntf===false)return;var p=await LN.checkPermissions();if(p.display!=="granted")return;
+  var L=[],used={},il=P.mem!=null&&IL[P.mem]?IL[P.mem].n:null,dn0=dayNo();
+  [1,2,3,5,7].forEach(function(d,k){var at=new Date();at.setDate(at.getDate()+d);at.setHours(19,[0,30,0,15,0][k],0,0);var wd=at.getDay(),b=null;
+    if(d===1&&(P.dayStreak||0)>=2)b="🔥 "+P.dayStreak+" günlük serin bu gece bitiyor! Tek bir maç yeter.";
+    else if(wd===0&&il&&!used.lig)b=(used.lig=1)&&"🏆 Memleket Ligi bu gece bitiyor! "+il+" için son puanları sen topla.";
+    else if(wd===6&&il&&!used.lig)b=(used.lig=1)&&"🏆 Lig yarın gece bitiyor. "+il+" şampiyon olabilir mi?";
+    else if((P.box|0)>0&&!used.box)b=(used.box=1)&&"🎁 Açılmamış "+P.box+" kutun var. İçinden joker çıkabilir!";
+    if(!b){var pool=["🗺️ Günün Haritası #"+(dn0+d)+" hazır! Herkes aynı başlangıçla, tek hak.","🎯 Günlük görevlerin yenilendi: +40 XP ve 1 joker seni bekliyor.","⚔️ Rakipler haritayı paylaşıyor. Sen kaç il alırsın?",il?"🏠 "+il+" ligde senin desteğini bekliyor. Günün 10 sorusu hazır!":"🏠 Memleketini seç, ligde onun için yarış!","🧠 Bugün kaç soruyu bilebilirsin? Rakiplerin hazır."];b=pool[(dn0+d)%pool.length];if(used[b])b=pool[(dn0+d+1)%pool.length];used[b]=1}
+    L.push({id:81+k,title:"Bilgi Savaşı",body:b,smallIcon:"ic_stat_bs",iconColor:"#f59e0b",schedule:{at:at,allowWhileIdle:true}})});
+  await LN.schedule({notifications:L})}catch(e){}}
+/* ---------- Duyurular (FCM, "hepsi" konusu) ---------- */
+function FMp(){var CP=window.Capacitor&&window.Capacitor.Plugins;return NAT&&CP&&CP.FirebaseMessaging?CP.FirebaseMessaging:null}
+async function pushInit(){var FM=FMp();if(!FM)return;try{if(SET.ntf===false){if(P.pushT){await FM.unsubscribeFromTopic({topic:"hepsi"});P.pushT=0;saveP()}return}
+  var p=await FM.checkPermissions();if(p.receive!=="granted")return;await FM.subscribeToTopic({topic:"hepsi"});if(!P.pushT){P.pushT=1;saveP()}}catch(e){console.warn("push",e)}}
+async function ntfAsk(){var LN=LNp();if(!LN||P.ntfAsk||SET.ntf===false)return;P.ntfAsk=1;saveP();try{var p=await LN.requestPermissions();if(p.display==="granted"){ntfPlan();pushInit()}}catch(e){}}
 
 /* ---------- kategori modu ---------- */
 function catF(){if(!G||G.daily||G.sefer)return null;var c=SET.cats;return c&&c.length&&c.length<7?c:null}
@@ -2125,7 +2136,7 @@ function drBoot(){if(P.mem!=null&&!P.memAt){P.memAt=Date.now()-8*864e5;P.memGrac
   setInterval(function(){if($("home").classList.contains("on"))drHome()},30000)}
 
 FX.init();drBoot();lqFix();renderHome();packLoad();
-$("bMq").onclick=unlGuard("bMq",mqMenu);["bLig","bSefer"].forEach(function(id){var f=$(id).onclick;if(f)$(id).onclick=unlGuard(id,f)});$("bMs").onclick=msShow;$("bStreak").onclick=streakInfo;mqBoot();ntfPlan();
+$("bMq").onclick=unlGuard("bMq",mqMenu);["bLig","bSefer"].forEach(function(id){var f=$(id).onclick;if(f)$(id).onclick=unlGuard(id,f)});$("bMs").onclick=msShow;$("bStreak").onclick=streakInfo;mqBoot();ntfPlan();setTimeout(pushInit,3000);
 </script>
 </body>
 </html>

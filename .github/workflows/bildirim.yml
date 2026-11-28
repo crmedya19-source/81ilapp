@@ -1,0 +1,42 @@
+name: Bildirim gönder
+on:
+  workflow_dispatch:
+    inputs:
+      mesaj:
+        description: 'Mesaj (örn: 🎉 500 yeni soru geldi! Hemen dene.)'
+        required: true
+      baslik:
+        description: 'Başlık'
+        required: true
+        default: 'Bilgi Savaşı'
+jobs:
+  gonder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Paketler
+        run: pip install --quiet google-auth requests
+      - name: Tüm oyunculara gönder
+        env:
+          SA: ${{ secrets.FCM_ANAHTAR }}
+          BASLIK: ${{ inputs.baslik }}
+          MESAJ: ${{ inputs.mesaj }}
+        run: |
+          python3 - <<'PY'
+          import os, json, sys, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          if not os.environ.get("SA"):
+              sys.exit("FCM_ANAHTAR gizli anahtarı eklenmemiş")
+          info = json.loads(os.environ["SA"])
+          cr = service_account.Credentials.from_service_account_info(info, scopes=["https://www.googleapis.com/auth/firebase.messaging"])
+          cr.refresh(Request())
+          msg = {"message": {"topic": "hepsi",
+                 "notification": {"title": os.environ["BASLIK"], "body": os.environ["MESAJ"]},
+                 "android": {"priority": "high", "notification": {"icon": "ic_stat_bs", "color": "#F59E0B"}}}}
+          r = requests.post(f"https://fcm.googleapis.com/v1/projects/{info['project_id']}/messages:send",
+                            headers={"Authorization": "Bearer " + cr.token}, json=msg, timeout=30)
+          print(r.status_code, r.text)
+          if r.status_code != 200:
+              sys.exit("Gönderilemedi")
+          print("✓ Bildirim gönderildi")
+          PY

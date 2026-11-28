@@ -1,10 +1,13 @@
 name: Bildirim gönder
 on:
+  schedule:
+    - cron: '30 15 * * 0'   # Pazar 18:30 (TR)
+    - cron: '30 16 * * 3'   # Çarşamba 19:30 (TR)
   workflow_dispatch:
     inputs:
       mesaj:
         description: 'Mesaj (örn: 🎉 500 yeni soru geldi! Hemen dene.)'
-        required: true
+        required: false
       baslik:
         description: 'Başlık'
         required: true
@@ -27,11 +30,31 @@ jobs:
           from google.auth.transport.requests import Request
           if not os.environ.get("SA"):
               sys.exit("FCM_ANAHTAR gizli anahtarı eklenmemiş")
+          import datetime, random
+          baslik = os.environ.get("BASLIK") or "Bilgi Savaşı"
+          mesaj = (os.environ.get("MESAJ") or "").strip()
+          if not mesaj:
+              n = datetime.datetime.utcnow()
+              hafta = n.isocalendar()[1]
+              if n.weekday() == 6:
+                  havuz = ["🏆 Memleket Ligi bu gece bitiyor! İlin için son puanları sen topla.",
+                           "⏰ Ligde son saatler! Memleketin bu hafta kaçıncı olacak?",
+                           "🏆 Haftanın şampiyon ili bu gece belli oluyor. Son bir sınav?",
+                           "🔥 Lig bitmeden memleketine 10 soruluk destek ver!"]
+              else:
+                  havuz = ["⚔️ Rakipler haritayı paylaşıyor. Sen kaç il alabilirsin?",
+                           "🗺️ Bugünün haritası hazır! Herkes aynı başlangıçla, tek hak.",
+                           "🧠 Hafta ortası beyin molası: 1 maç, 81 il, binlerce soru.",
+                           "🤝 Bir arkadaşına meydan oku, bakalım kim daha çok bilecek!",
+                           "🕵️ Bu maçta gizli görevin ne çıkacak? Gel bak!",
+                           "👑 Başkentini koru, komşularını fethet. Savaş seni bekliyor!"]
+              mesaj = havuz[hafta % len(havuz)]
+          print("Mesaj:", mesaj)
           info = json.loads(os.environ["SA"])
           cr = service_account.Credentials.from_service_account_info(info, scopes=["https://www.googleapis.com/auth/firebase.messaging"])
           cr.refresh(Request())
           msg = {"message": {"topic": "hepsi",
-                 "notification": {"title": os.environ["BASLIK"], "body": os.environ["MESAJ"]},
+                 "notification": {"title": baslik, "body": mesaj},
                  "android": {"priority": "high", "notification": {"icon": "ic_stat_bs", "color": "#F59E0B"}}}}
           r = requests.post(f"https://fcm.googleapis.com/v1/projects/{info['project_id']}/messages:send",
                             headers={"Authorization": "Bearer " + cr.token}, json=msg, timeout=30)

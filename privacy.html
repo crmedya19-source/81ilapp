@@ -4,16 +4,17 @@
 <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:760px;margin:0 auto;padding:24px 18px 60px;line-height:1.6;color:#1e293b}h1{font-size:26px}h2{font-size:19px;margin-top:28px}small{color:#64748b}hr{margin:40px 0;border:0;border-top:1px solid #e2e8f0}</style></head>
 <body>
 <h1>Bilgi Savaşı · Gizlilik Politikası</h1>
-<small>Son güncelleme: 14 Kasım 2026</small>
+<small>Son güncelleme: 28 Kasım 2026</small>
 <p>Bu politika, Android için yayınlanan <b>Bilgi Savaşı</b> oyununun hangi verileri neden kullandığını açıklar. Oyunda şifre yoktur; hesap açmak isteğe bağlıdır (Google ile giriş).</p>
 <h2>Topladığımız veriler</h2>
 <ul>
 <li><b>Anonim oyuncu kimliği:</b> Oyun ilk açıldığında Google Firebase tarafından rastgele bir kimlik oluşturulur. Bu kimlik adınızı, telefon numaranızı veya e-postanızı içermez.</li>
-<li><b>Google ile giriş (isteğe bağlı):</b> Profil ekranından Google ile giriş yaparsanız Google hesabınızın e-posta adresi ve kimliği Firebase'de hesabınızı tanımak için saklanır. Oyun ilerlemeniz (seviye, XP, jokerler, rozetler, ayarlar) telefon değiştirdiğinizde geri yüklenebilmesi için bu hesaba bağlı olarak Firestore'da saklanır. Profil ekranındaki "Çıkış" ile çıkabilir, verilerinizin silinmesini isteyebilirsiniz.</li>
+<li><b>Google ile giriş (isteğe bağlı):</b> Oyun açılışında veya Profil ekranından Google ile giriş yaparsanız Google hesabınızın e-posta adresi ve kimliği Firebase'de hesabınızı tanımak için saklanır. Oyun ilerlemeniz (seviye, XP, jokerler, rozetler, ayarlar) telefon değiştirdiğinizde geri yüklenebilmesi için bu hesaba bağlı olarak Firestore'da saklanır. Profil ekranındaki "Çıkış" ile çıkabilir, verilerinizin silinmesini isteyebilirsiniz.</li>
 <li><b>Lig verileri:</b> Seçtiğiniz memleket (il), isteğe bağlı yazdığınız takma ad ve haftalık sınav puanınız. Bunlar Memleket Ligi sıralamasında diğer oyunculara gösterilir.</li>
 <li><b>Davet kodu verileri:</b> Size ait 6 haneli davet kodu ve kullandığınız davet kodu.</li>
 <li><b>Oda maçı verileri:</b> Arkadaşınızla oynarken oda kodu, takma ad, seçtiğiniz avatar ve maç hamleleri anlık olarak iletilir; maç bittiğinde silinir.</li>
-<li><b>Telefonda kalan veriler:</b> Seviye, XP, rozetler, istatistikler ve ayarlar yalnızca telefonunuzda saklanır.</li>
+<li><b>Telefonda kalan veriler:</b> Google ile giriş yapmadıysanız seviye, XP, rozetler, istatistikler ve ayarlar yalnızca telefonunuzda saklanır.</li>
+<li><b>Soru bildirimleri:</b> Hatalı bir soruyu bildirirseniz soru, seçtiğiniz sebep ve yazdığınız not oyuncu kimliğinizle birlikte saklanır.</li>
 </ul>
 <h2>Reklamlar</h2>
 <p>Oyun, Google AdMob aracılığıyla reklam gösterir. AdMob, reklam göstermek ve ölçmek için cihazın reklam kimliğini ve bazı teknik bilgileri kullanabilir. Ayrıntılar: <a href="https://policies.google.com/technologies/ads?hl=tr">Google reklam politikası</a>. Kişiselleştirilmiş reklamları telefonunuzun <i>Ayarlar → Google → Reklamlar</i> bölümünden kapatabilirsiniz.</p>
@@ -23,12 +24,23 @@
 <h2>Verilerin paylaşımı</h2>
 <p>Verileriniz satılmaz. Yalnızca oyunun çalışması için yukarıdaki Google hizmetleriyle işlenir. Lig sıralamasındaki takma ad, il ve puan diğer oyunculara görünür.</p>
 <h2>Saklama ve silme</h2>
-<p>Haftalık lig verileri her hafta yenilenir. Uygulamayı kaldırdığınızda telefondaki veriler silinir ve anonim kimliğiniz bir daha kullanılmaz. Sunucudaki lig kaydınızın silinmesini istiyorsanız Google Play'deki uygulama sayfasında yer alan geliştirici e-posta adresine yazabilirsiniz.</p>
+<p>Haftalık lig verileri her hafta yenilenir; oda maçı verileri en geç 12 saat içinde otomatik silinir. Google hesabıyla bağlı ilerleme yedeği, hesabınızı silene kadar saklanır.</p>
+<p><b>Hesabınızı uygulama içinden silebilirsiniz:</b> Profil → <i>Hesabımı ve verilerimi sil</i>. Bu işlem hesabınızı, buluttaki ilerleme yedeğinizi, lig ve davet kodu kayıtlarınızı ve telefondaki oyun verilerinizi kalıcı olarak siler. Uygulamaya erişiminiz yoksa <a href="veri-silme.html">veri silme sayfasındaki</a> adımlarla talepte bulunabilirsiniz.</p>
+<h2>KVKK Aydınlatma Metni</h2>
+<p>6698 sayılı Kişisel Verilerin Korunması Kanunu'nun (KVKK) 10. maddesi uyarınca sizi bilgilendiririz.</p>
+<p><b>Veri sorumlusu:</b> Google Play'de <i>Bilgi Savaşı</i> uygulamasının geliştiricisi olarak görünen kişidir. Geliştiricinin adı ve iletişim e-posta adresi uygulamanın Google Play sayfasındaki "Uygulama desteği" bölümünde yer alır.</p>
+<p><b>İşlenen veriler:</b> Oyuncu kimliği; Google ile giriş yaparsanız e-posta adresi ve Google kimliği; oyun ilerlemesi; lig verileri (il, takma ad, puan); davet kodu; soru bildirimleri; reklam kimliği ve cihaz bilgileri (AdMob).</p>
+<p><b>İşleme amaçları:</b> Oyunun sunulması ve oynanması, hesabınızın tanınması ve ilerlemenizin yedeklenip geri yüklenmesi, lig sıralaması ve arkadaşla oynama özelliklerinin çalışması, hile ve kötüye kullanımın önlenmesi, hatalı soruların düzeltilmesi, reklam gösterilmesi.</p>
+<p><b>Hukuki sebepler:</b> Hizmetin sunulması için gerekli olması (KVKK m.5/2-c), veri sorumlusunun meşru menfaati (güvenlik ve hile önleme, m.5/2-f) ve kişiselleştirilmiş reklamlar için uygulama içindeki izin penceresinde verdiğiniz açık rıza (m.5/1).</p>
+<p><b>Toplama yöntemi:</b> Veriler, uygulamayı kullanmanız sırasında elektronik ortamda, otomatik olarak ve Google hizmetleri (Firebase, AdMob, Google ile giriş) aracılığıyla toplanır.</p>
+<p><b>Aktarım:</b> Veriler, hizmetin sağlanması amacıyla Google LLC ve bağlı şirketlerinin sunucularında işlenir. Bu sunucular yurt dışında bulunduğundan verileriniz KVKK'nın 9. maddesi kapsamında yurt dışına aktarılır. Veriler başka hiçbir üçüncü kişiye satılmaz veya aktarılmaz; lig sıralamasındaki takma ad, il ve puan diğer oyunculara görünür.</p>
+<p><b>Haklarınız (KVKK m.11):</b> Kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini, silinmesini veya yok edilmesini isteme, bu işlemlerin aktarıldığı üçüncü kişilere bildirilmesini isteme, otomatik sistemlerle analiz edilmesi sonucu aleyhinize bir sonuç çıkmasına itiraz etme ve kanuna aykırı işleme nedeniyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.</p>
+<p><b>Başvuru:</b> Bu haklarınızı kullanmak için Google Play sayfasındaki geliştirici e-posta adresine "KVKK başvurusu" konulu bir e-posta gönderebilirsiniz. Başvurunuz en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.</p>
 <h2>Çocuklar</h2>
 <p>Oyun 13 yaş altındaki çocuklara yönelik değildir ve bilerek 13 yaş altındaki çocuklardan kişisel veri toplanmaz.</p>
 <h2>İletişim</h2>
 <p>Sorularınız için Google Play'deki uygulama sayfasında yer alan geliştirici e-posta adresini kullanabilirsiniz.</p>
 <hr>
 <h1>Privacy Policy (English)</h1>
-<p><b>Bilgi Savaşı</b> has no passwords; an account is optional (Sign in with Google stores your Google e-mail and ID in Firebase and a copy of your game progress so it can be restored on a new phone). On first launch Google Firebase assigns a random anonymous ID. If you join the weekly league we store your chosen province, an optional nickname and your weekly quiz score; these are shown to other players. Invite codes and live friend-match data (room code, nickname, avatar, moves) are processed to run those features; match data is temporary. Level, XP, badges and settings stay on your device. Ads are served by Google AdMob, which may use your device's advertising ID. Data is never sold. Uninstalling the app removes local data; to delete your server-side league record, contact the developer e-mail listed on the Google Play page. The game is not directed at children under 13.</p>
+<p><b>Bilgi Savaşı</b> has no passwords; an account is optional (Sign in with Google stores your Google e-mail and ID in Firebase and a copy of your game progress so it can be restored on a new phone). On first launch Google Firebase assigns a random anonymous ID. If you join the weekly league we store your chosen province, an optional nickname and your weekly quiz score; these are shown to other players. Invite codes and live friend-match data (room code, nickname, avatar, moves) are processed to run those features; match data is temporary. Level, XP, badges and settings stay on your device. Ads are served by Google AdMob, which may use your device's advertising ID. Data is never sold. Uninstalling the app removes local data; to delete your server-side league record, contact the developer e-mail listed on the Google Play page. Logged-in users can delete their account and all associated data in the app (Profile → Delete my account and data) or via the data deletion page. The game is not directed at children under 13.</p>
 </body></html>

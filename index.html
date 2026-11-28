@@ -1381,7 +1381,7 @@ var GWEB="90014705022-736iltqtgn8bicm6pgppdspbap5e35j0.apps.googleusercontent.co
 function gPlug(){var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.SocialLogin||null}
 function gUser(){try{var u=window.firebase&&firebase.apps.length&&firebase.auth().currentUser;return u&&!u.isAnonymous?u:null}catch(e){return null}}
 function gMail(){var u=gUser();return u&&(u.email||(u.providerData[0]||{}).email)||""}
-async function cloudPush(){var u=gUser();if(!u)return false;if(!P.gIn)P.gIn=1;try{var F=await fbLoad();if(!F)return false;await F.fs.collection("kayit").doc(u.uid).set({p:JSON.stringify(P),xp:P.xp|0,v:APPV,ts:firebase.firestore.FieldValue.serverTimestamp()});P.cloudAt=Date.now();LS.s("prof",P);return true}catch(e){console.warn("bulut",e);return false}}
+async function cloudPush(){var u=gUser();if(!u||window.__gDel)return false;if(!P.gIn)P.gIn=1;try{var F=await fbLoad();if(!F)return false;await F.fs.collection("kayit").doc(u.uid).set({p:JSON.stringify(P),xp:P.xp|0,v:APPV,ts:firebase.firestore.FieldValue.serverTimestamp()});P.cloudAt=Date.now();LS.s("prof",P);return true}catch(e){console.warn("bulut",e);return false}}
 function cloudLater(){if(!gUser())return;clearTimeout(GT);GT=setTimeout(cloudPush,30000)}
 document.addEventListener("visibilitychange",function(){if(document.hidden&&GT){clearTimeout(GT);GT=null;cloudPush()}});
 function gBoot(){if(gUser()){gGateDone();if(!P.gIn){P.gIn=1;LS.s("prof",P)}if(!P.cloudAt)cloudPush();return}if(gPlug()&&!window.__gSkip)gGate()}
@@ -1411,9 +1411,19 @@ async function gLogin(btn,gate){var SL=gPlug();if(!SL){toast("Google girişi uyg
 async function gLogout(){if(!confirm2())return;P.gIn=0;try{await cloudPush();var SL=gPlug();if(SL)try{await SL.logout({provider:"google"})}catch(e){}await firebase.auth().signOut()}catch(e){}FBP=null;toast("Çıkış yapıldı");setTimeout(function(){location.reload()},700)}
 function confirm2(){return true}
 function gCard(){if(inClaude())return "";var u=gUser();
-  if(u)return "<div class='card gcard'><div><b>✅ Google hesabı bağlı</b><div class='mut' style='font-size:12px'>"+esc(gMail())+" · ilerlemen buluta kaydediliyor</div></div><button class='btn' id='gOut' style='padding:6px 10px;font-size:12px'>Çıkış</button></div>";
+  if(u)return "<div class='card gcard'><div><b>✅ Google hesabı bağlı</b><div class='mut' style='font-size:12px'>"+esc(gMail())+" · ilerlemen buluta kaydediliyor</div></div><button class='btn' id='gOut' style='padding:6px 10px;font-size:12px'>Çıkış</button></div><button class='gskip' id='gDel' style='display:block;margin:-6px auto 8px;color:#f87171'>Hesabımı ve verilerimi sil</button>";
   return "<div class='card gcard'><div><b>☁️ İlerlemeni kaybetme</b><div class='mut' style='font-size:12px'>Telefon değişse de seviyen, jokerlerin ve rozetlerin seninle gelsin.</div></div></div><button class='btn gbtn' id='gIn' style='width:100%;margin-bottom:10px'><span class='gG'>G</span>Google ile giriş yap</button>"}
-function gWire(){var a=$("gIn"),b=$("gOut");if(a)a.onclick=function(){gLogin(a)};if(b)b.onclick=function(){gLogout()}}
+function gWire(){var a=$("gIn"),b=$("gOut"),c=$("gDel");if(a)a.onclick=function(){gLogin(a)};if(b)b.onclick=function(){gLogout()};if(c)c.onclick=gDelAsk}
+function gDelAsk(){modal("<button class='x' data-x='mOv'>✕</button><h3>🗑️ Hesabı sil</h3><p>Şunlar <b>kalıcı olarak</b> silinecek ve geri alınamaz:</p><ul style='margin:0 0 10px 18px;padding:0;line-height:1.6'><li>Google hesabı bağlantın ve oyuncu kimliğin</li><li>Buluttaki ilerleme yedeğin</li><li>Memleket Ligi kaydın, davet kodun</li><li>Bu telefondaki seviye, XP, joker ve rozetlerin</li></ul><p class='mut' style='font-size:12px'>Google hesabının kendisi silinmez, sadece bu oyundaki verilerin silinir.</p><button class='btn' id='gDelOk' style='width:100%;background:#dc2626;color:#fff'>Evet, kalıcı olarak sil</button><button class='btn' data-x='mOv' style='width:100%;margin-top:8px'>Vazgeç</button>");$("gDelOk").onclick=function(){gDelete(this)}}
+async function gDelete(btn){var u=gUser();if(!u)return;btn.disabled=true;btn.textContent="Siliniyor…";window.__gDel=1;clearTimeout(GT);
+  try{var F=await fbLoad(),fs=F.fs,id=u.uid;
+    var del=[fs.collection("kayit").doc(id).delete(),fs.collection("lig").doc(id).delete(),fs.collection("davet").doc(id).delete()];if(P.codeReg)del.push(fs.collection("kod").doc(P.codeReg).delete());
+    await Promise.all(del.map(function(x){return x.catch(function(e){console.warn("sil",e)})}));
+    try{await u.delete()}catch(e){if(!e||e.code!=="auth/requires-recent-login")throw e;var SL=gPlug();await SL.initialize({google:{webClientId:GWEB,mode:"online"}});var r=await SL.login({provider:"google",options:{}});await u.reauthenticateWithCredential(firebase.auth.GoogleAuthProvider.credential(r.result.idToken));await u.delete()}
+    try{var SL2=gPlug();if(SL2)await SL2.logout({provider:"google"})}catch(e){}
+    Object.keys(localStorage).forEach(function(k){if(k.indexOf("f81_")===0)localStorage.removeItem(k)});
+    close("mOv");toast("Hesabın ve verilerin silindi");setTimeout(function(){location.reload()},1200)}
+  catch(e){console.warn("sil",e);window.__gDel=0;btn.disabled=false;btn.textContent="Evet, kalıcı olarak sil";toast("Silinemedi: "+((e&&(e.code||e.message))||"hata")+". İnternetini kontrol edip tekrar dene.")}}
 function profOpen(){var b=$("bStat");if(b&&b.onclick)b.onclick()}
 function fbRoom(F){var me="p"+Math.random().toString(36).slice(2,12),joined={};
   function mkPeer(id,v,old){var pr=v&&v.p||{};return Object.freeze({peer:id,by:v&&v.by||null,isMe:id===me,sameTab:id===me,kind:"viewer",guest:false,presence:Object.freeze(pr),updatedAt:old&&JSON.stringify(old.presence)===JSON.stringify(pr)?old.updatedAt:Date.now()})}
